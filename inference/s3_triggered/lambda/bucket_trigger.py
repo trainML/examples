@@ -18,12 +18,12 @@ trainml_key= ssm_client.get_parameter(
 
 trainml_client = TrainML(user=trainml_user, key=trainml_key)
 
-async def create_job(input_uri, output_uri):
+async def create_job(name, input_uri, output_uri):
     print(input_uri)
     print(output_uri)
 
     job = await trainml_client.jobs.create(
-        name=f"Inference {input_uri}",
+        name=name,
         type="inference",
         gpu_type="RTX 2080 Ti",
         gpu_count=1,
@@ -41,11 +41,12 @@ async def create_job(input_uri, output_uri):
     )
     return job
 
-def lambda_handler(event):
+def lambda_handler(event, context):
     print(event)
     for record in event["Records"]:
         input_uri = f"s3://{record['s3']['bucket']['name']}/{record['s3']['object']['key']}"
-        output_key = "processed/" + re.sub(r"incoming\/", "", record["s3"]["object"]["key"])
+        file_name = re.sub(r"incoming\/", "", record["s3"]["object"]["key"])
+        output_key = "processed/" + file_name
         output_uri = f"s3://{record['s3']['bucket']['name']}/{output_key}"
-        job = asyncio.run(create_job(input_uri,output_uri))
+        job = asyncio.run(create_job(f"Inference {file_name}", input_uri,output_uri))
         print(job.id)
