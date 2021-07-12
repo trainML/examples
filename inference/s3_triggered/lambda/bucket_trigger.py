@@ -4,19 +4,26 @@ import os
 import asyncio
 from trainml import TrainML
 
-ssm_client = boto3.client('ssm')
-s3_client = boto3.client('s3')
+ssm_client = boto3.client("ssm")
+s3_client = boto3.client("s3")
 
-trainml_user= ssm_client.get_parameter(
-    Name=os.environ.get("TRAINML_USER_PATH"),
-    WithDecryption=True
-).get("Parameter").get("Value")
-trainml_key= ssm_client.get_parameter(
-    Name=os.environ.get("TRAINML_KEY_PATH"),
-    WithDecryption=True
-).get("Parameter").get("Value")
+trainml_user = (
+    ssm_client.get_parameter(
+        Name=os.environ.get("TRAINML_USER_PATH"), WithDecryption=True
+    )
+    .get("Parameter")
+    .get("Value")
+)
+trainml_key = (
+    ssm_client.get_parameter(
+        Name=os.environ.get("TRAINML_KEY_PATH"), WithDecryption=True
+    )
+    .get("Parameter")
+    .get("Value")
+)
 
 trainml_client = TrainML(user=trainml_user, key=trainml_key)
+
 
 async def create_job(name, input_uri, output_uri):
     print(input_uri)
@@ -37,16 +44,22 @@ async def create_job(name, input_uri, output_uri):
             output_type="aws",
             output_uri=output_uri,
         ),
-        model=dict(source_type="git", source_uri="https://github.com/trainML/examples.git"),
+        model=dict(
+            source_type="git",
+            source_uri="https://github.com/trainML/examples.git",
+        ),
     )
     return job
+
 
 def lambda_handler(event, context):
     print(event)
     for record in event["Records"]:
         input_uri = f"s3://{record['s3']['bucket']['name']}/{record['s3']['object']['key']}"
-        file_name = re.sub(r"incoming\/", "", record["s3"]["object"]["key"])
-        output_key = "processed/" + file_name
-        output_uri = f"s3://{record['s3']['bucket']['name']}/{output_key}"
-        job = asyncio.run(create_job(f"Inference {file_name}", input_uri,output_uri))
+        file_name = re.sub(r"^incoming\/", "", record["s3"]["object"]["key"])
+        file_name = re.sub(r".zip$", "", file_name)
+        output_uri = f"s3://{record['s3']['bucket']['name']}/processed"
+        job = asyncio.run(create_job(file_name, input_uri, output_uri))
+
+        ## Job information should be saved in a persistent datastore to pull for status and verify completion
         print(job.id)
