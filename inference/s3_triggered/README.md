@@ -14,3 +14,5 @@ using default ssm KMS key.
 ```
 ./delete-stack.sh us-east-1
 ```
+
+https://github.com/trainML/examples/raw/master/inference/s3_triggered/images.zip
