@@ -2,7 +2,7 @@
 
 This example is designed to demonstrate how you can provision trainML resources programmatically based on events occurring in other environments. It uses AWS S3's [Event Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html) with [Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html). Other cloud providers have similar capabilities.
 
-In the example, we will use cloudformation to create an S3 bucket that will invoke a Lambda function when new images are loaded into the `/incoming` folder. This Lambda function will create a [trainML Inference Job](https://docs.trainml.ai/getting-started/running-inference/) to evaluate the images with a pretrained model and save the predicted image classes back to the `/processed` folder in the same S3 bucket.
+In the example, we will use CloudFormation to create an S3 bucket that will invoke a Lambda function when new images are loaded into the `/incoming` folder. This Lambda function will create a [trainML Inference Job](https://docs.trainml.ai/getting-started/running-inference/) to evaluate the images with a pretrained model and save the predicted image classes back to the `/processed` folder in the same S3 bucket.
 
 Executing the example once should cost less than $0.01 in trainML cost. All AWS resources should be included in the [AWS Free Tier](https://aws.amazon.com/free), but additional costs may apply.
 
@@ -18,7 +18,7 @@ Before beginning this example, ensure that you have satisfied the following prer
 
 ## AWS Setup
 
-The majority of the AWS setup is performed by the provide cloudformation templates. The only remaining manual steps are to configure the API Keys and IAM policies for the trainML IAM user, which are unique to your account.
+The majority of the AWS setup is performed by the provide CloudFormation templates. The only remaining manual steps are to place the trainML API keys in a secure location accessible to Lambda and set the IAM policy for the trainML IAM user.
 
 ### Manual Configuration
 
@@ -26,11 +26,11 @@ The majority of the AWS setup is performed by the provide cloudformation templat
 
 Programmatic access to trainML resources is provided through the [trainML SDK](https://docs.trainml.ai/reference/cli-sdk). To allow a Lambda function to use the SDK, it must have access to a [trainML API key](https://docs.trainml.ai/reference/cli-sdk#authentication) for your account. The code in this example expects they keys to be stored as two `SecureString` parameters in [AWS Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
 
-Once you have generated a `credentials.json` file from the trainML [account settings page](https://app.trainml.ai/account/settings), create parameters named `/trainml/api_user` and `/trainml/api_key` and set them to the values of `user` and `key` from the `credentials.json` file. Both parameters must be the `SecureString` type, and the example assumes you are using the default AWS KMS key for encryption. If you use a different KMS key, you will need to modify the Lambda execution policy in the cloudformation template to give Lamdba access to decrypt the parameter.
+Once you have generated a `credentials.json` file from the trainML [account settings page](https://app.trainml.ai/account/settings), create two new AWS Parameter Store parameters named `/trainml/api_user` and `/trainml/api_key`. Set their values to the `user` and `key` from the `credentials.json` file, respectively. Both parameters must be the `SecureString` type, and the example assumes you are using the default AWS KMS key for encryption. If you use a different KMS key, you will need to modify the Lambda execution policy in the CloudFormation template to give Lamdba access to decrypt the parameter.
 
 #### trainML IAM User Policy
 
-In order to access the new S3 data and place the results back, you must configure [AWS Keys](https://docs.trainml.ai/reference/third-party-keys/#aws-keys) in the trainML platform. The user you configure must have a policy that grants the correct access to allow access to the resources required. [Attach the following policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html) to the IAM user you created for trainML.
+In order to access the new S3 data and place the results back, you must configure [AWS Keys](https://docs.trainml.ai/reference/third-party-keys/#aws-keys) in the trainML platform. The IAM user you use for this must have a policy that grants the correct access to allow access to the resources required. [Attach the following policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html) to the IAM user you created for trainML.
 
 ```
 {
@@ -61,23 +61,23 @@ In order to access the new S3 data and place the results back, you must configur
 }
 ```
 
-This policy will grant read/write access to any s3 bucket in your account with a name starting with `trainml-example-*`. The bucket names in the provided template are actually dynamically generated by cloudformation, since these names must be globally unique.
+This policy will grant read/write access to any S3 bucket in your account with a name starting with `trainml-example-*`. The bucket names in the provided template are actually dynamically generated by CloudFormation, since these names must be globally unique.
 
 ### Creating the Stack
 
-The rest of the AWS resources will be automatically created through cloudformation. Pull the [trainML examples](https://github.com/trainML/examples.git) repository and navigate to the `/inference/s3_triggered` folder. To create the stack, run the following command:
+The rest of the AWS resources will be automatically created through CloudFormation. Pull the [trainML examples](https://github.com/trainML/examples.git) repository and navigate to the `/inference/s3_triggered` folder. To create the stack, run the following command:
 
 ```
 ./create_stack.sh
 ```
 
-The contents of the script are beyond the scope of the example. It will create an S3 bucket to deploy the Lambda code, package and upload the Lambda code to the deployment bucket, create the S3 bucket for receiving the new input data, create the Lambda function itself with its execution role, and setup the Lambda event trigger on the S3 bucket while [avoiding circular dependencies](https://aws.amazon.com/premiumsupport/knowledge-center/unable-validate-destination-s3/).
+The contents of the script are beyond the scope of the example. It's effect will be to create an S3 bucket to deploy the Lambda code, package and upload the Lambda code to the deployment bucket, create the S3 bucket for receiving the new input data, create the Lambda function itself with its execution role, and setup the Lambda event trigger on the S3 bucket while [avoiding circular dependencies](https://aws.amazon.com/premiumsupport/knowledge-center/unable-validate-destination-s3/).
 
 Once the script finishes, everything will be setup to process new data.
 
 ## Classifying New Images
 
-The `images.zip` file in the repository contains 5 images from the ImageNet validation set to simulate new images generated as part of your business's operations process. To upload these to the `/incoming` folder in the S3 bucket, running the following:
+The `images.zip` file in the repository contains 5 images from the ImageNet validation set to simulate new images generated as part of your business's operations. To upload these to the `/incoming` folder in the S3 bucket, running the following:
 
 ```
 ./push-new-images.sh
@@ -85,7 +85,7 @@ The `images.zip` file in the repository contains 5 images from the ImageNet vali
 
 This will cause the [lambda function code](https://github.com/trainML/examples/blob/master/inference/s3_triggered/lambda/bucket_trigger.py) to run, which will extract the uri of the new data from the event data and create a new trainML inference job using that data as the input.
 
-Since this example is providing a zip file as the `input_uri`, the file will be automatically extracted prior to the job starting, so all the images should be located in the root of the `TRAINML_DATA_PATH` location (see [environment variables](/reference/environment-variables)). The [model code](https://github.com/trainML/examples/blob/master/inference/s3_triggered/trainml_model/predict.py) then iterates through each `.JPEG` file it finds the `TRAINML_DATA_PATH` and uses a pretrained vgg16 model to predict the top 5 classes for each image. It saves the predictions to `.json` files with the same name as the images in the `TRAINML_OUTPUT_PATH`. When the job finishes, all files in the `TRAINML_OUTPUT_PATH` are zipped into a file with the job name and uploaded to the `/processed` folder in the same S3 bucket (as specified by the `output_uri` in the job creation dict).
+Since this example is providing a zip file as the `input_uri`, the file will be automatically extracted prior to the job starting, so all the images should be located in the root of the `TRAINML_DATA_PATH` location (see [environment variables](/reference/environment-variables)). The [model code](https://github.com/trainML/examples/blob/master/inference/s3_triggered/trainml_model/predict.py) then iterates through each `.JPEG` file it finds in the `TRAINML_DATA_PATH` and uses a pre-trained vgg16 model to predict the top 5 classes for each image. It saves the predictions to `.json` files with the same names as the images in the `TRAINML_OUTPUT_PATH`. When the job finishes, all files in the `TRAINML_OUTPUT_PATH` are zipped into a file with the job name and uploaded to the `/processed` folder in the same S3 bucket (as specified by the `output_uri` in the job creation dict).
 
 You can view the status of the job on the [Inference Job Dashboard](https://app.trainml.ai/jobs/inference) as well as view the job logs. The job will automatically stop when inference is complete and the output data is uploaded. Navigate to the S3 console in your AWS account and open the bucket with the name `trainml-example-inference-s3-trigger-databucket-<random string>`. In the `/processed` directory, you will see a zip file. Download this and extract it to review the model predictions.
 
