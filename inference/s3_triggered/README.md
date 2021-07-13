@@ -1,14 +1,12 @@
-This tutorial is designed to demonstrate how you can provision trainML resources programmatically based on events occurring in other environments. It uses AWS S3's [Event Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html) with [Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html). Other cloud providers have similar capabilities.
+This example is designed to demonstrate how you can provision trainML resources programmatically based on events occurring in other environments. It uses AWS S3's [Event Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html) with [Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html). Other cloud providers have similar capabilities.
 
-In the tutorial, we will use cloudformation to create an S3 bucket that will invoke a Lambda function when new images are loaded into the `/incoming` folder. This Lambda function will create a [trainML Inference Job](https://docs.trainml.ai/getting-started/running-inference/) to evaluate the images with a pretrained model and save the predicted image classes back to the `/processed` folder in the same S3 bucket.
+In the example, we will use cloudformation to create an S3 bucket that will invoke a Lambda function when new images are loaded into the `/incoming` folder. This Lambda function will create a [trainML Inference Job](https://docs.trainml.ai/getting-started/running-inference/) to evaluate the images with a pretrained model and save the predicted image classes back to the `/processed` folder in the same S3 bucket.
 
-The code for this tutorial is located here: https://github.com/trainML/examples/tree/master/inference/s3_triggered
-
-Executing the tutorial once should cost less than $0.01 in trainML cost. All AWS resources should be included in the [AWS Free Tier](https://aws.amazon.com/free), but additional costs may apply.
+Executing the example once should cost less than $0.01 in trainML cost. All AWS resources should be included in the [AWS Free Tier](https://aws.amazon.com/free), but additional costs may apply.
 
 ### Prerequisites
 
-Before beginning this tutorial, ensure that you have satisfied the following prerequisites.
+Before beginning this example, ensure that you have satisfied the following prerequisites.
 
 - A valid [trainML account](https://auth.trainml.ai/login?response_type=code&client_id=536hafr05s8qj3ihgf707on4aq&redirect_uri=https://app.trainml.ai/auth/callback) with a non-zero [credit balance](https://docs.trainml.ai/reference/billing-credits/)
 - The local connection capability [prerequisites](https://docs.trainml.ai/reference/connection-capability/#prerequisites)
@@ -24,9 +22,9 @@ The majority of the AWS setup is performed by the provide cloudformation templat
 
 #### trainML API Key Setup
 
-Programmatic access to trainML resources is provided through the [trainML SDK](https://docs.trainml.ai/reference/cli-sdk). To allow a Lambda function to use the SDK, it must have access to a [trainML API key](https://docs.trainml.ai/reference/cli-sdk#authentication) for your account. The code in this tutorial expects they keys to be stored as two `SecureString` parameters in [AWS Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
+Programmatic access to trainML resources is provided through the [trainML SDK](https://docs.trainml.ai/reference/cli-sdk). To allow a Lambda function to use the SDK, it must have access to a [trainML API key](https://docs.trainml.ai/reference/cli-sdk#authentication) for your account. The code in this example expects they keys to be stored as two `SecureString` parameters in [AWS Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
 
-Once you have generated a `credentials.json` file from the trainML [account settings page](https://app.trainml.ai/account/settings), create parameters named `/trainml/api_user` and `/trainml/api_key` and set them to the values of `user` and `key` from the `credentials.json` file. Both parameters must be the `SecureString` type, and the tutorial assumes you are using the default AWS KMS key for encryption. If you use a different KMS key, you will need to modify the Lambda execution policy in the cloudformation template to give Lamdba access to decrypt the parameter.
+Once you have generated a `credentials.json` file from the trainML [account settings page](https://app.trainml.ai/account/settings), create parameters named `/trainml/api_user` and `/trainml/api_key` and set them to the values of `user` and `key` from the `credentials.json` file. Both parameters must be the `SecureString` type, and the example assumes you are using the default AWS KMS key for encryption. If you use a different KMS key, you will need to modify the Lambda execution policy in the cloudformation template to give Lamdba access to decrypt the parameter.
 
 #### trainML IAM User Policy
 
@@ -71,7 +69,7 @@ The rest of the AWS resources will be automatically created through cloudformati
 ./create_stack.sh
 ```
 
-The contents of the script are beyond the scope of the tutorial. It will create an S3 bucket to deploy the Lambda code, package and upload the Lambda code to the deployment bucket, create the S3 bucket for receiving the new input data, create the Lambda function itself with its execution role, and setup the Lambda event trigger on the S3 bucket while [avoiding circular dependencies](https://aws.amazon.com/premiumsupport/knowledge-center/unable-validate-destination-s3/).
+The contents of the script are beyond the scope of the example. It will create an S3 bucket to deploy the Lambda code, package and upload the Lambda code to the deployment bucket, create the S3 bucket for receiving the new input data, create the Lambda function itself with its execution role, and setup the Lambda event trigger on the S3 bucket while [avoiding circular dependencies](https://aws.amazon.com/premiumsupport/knowledge-center/unable-validate-destination-s3/).
 
 Once the script finishes, everything will be setup to process new data.
 
