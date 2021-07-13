@@ -4,8 +4,8 @@
 
 import os
 import glob
-import json
 import re
+import json
 import numpy as np
 import tensorflow as tf
 
@@ -54,17 +54,19 @@ def predict_image(filename):
     # we will get top 5 predictions which is the default
     label_vgg = decode_predictions(predictions)
 
-    return label_vgg[0]
+    return [
+        dict(id=id, name=name, confidence=float(confidence))
+        for id, name, confidence in label_vgg[0]
+    ]
 
 
 for filename in glob.glob(f"{data_dir}/*.JPEG"):
     classes = predict_image(filename)
+    input_file = os.path.basename(filename)
 
-    output_file_name = re.sub(
-        ".JPEG", "_pred.json", os.path.basename(filename)
-    )
+    output_file_name = re.sub(".JPEG", "_pred.json", input_file)
 
     print(f"{output_file_name}: {classes}")
 
     with open(f"{output_dir}/{output_file_name}", "w") as f:
-        f.write(json.dumps(str(classes)))
+        json.dump(dict(file=input_file, classes=classes), f)
