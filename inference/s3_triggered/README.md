@@ -1,5 +1,7 @@
 # Automating Inference using S3 Lambda Triggers and trainML Inference Jobs
 
+![Example Diagram](https://docs.trainml.ai/assets/tutorial-s3-lambda-trigger-inference-diagram.png)
+
 This example is designed to demonstrate how you can provision trainML resources programmatically based on events occurring in other environments. It uses AWS S3's [Event Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html) with [Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html). Other cloud providers have similar capabilities.
 
 In the example, we will use CloudFormation to create an S3 bucket that will invoke a Lambda function when new images are loaded into the `/incoming` folder. This Lambda function will create a [trainML Inference Job](https://docs.trainml.ai/getting-started/running-inference/) to evaluate the images with a pretrained model and save the predicted image classes back to the `/processed` folder in the same S3 bucket.
