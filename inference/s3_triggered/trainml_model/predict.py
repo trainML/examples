@@ -60,13 +60,14 @@ def predict_image(filename):
     ]
 
 
-for filename in glob.glob(f"{data_dir}/*.JPEG"):
-    classes = predict_image(filename)
-    input_file = os.path.basename(filename)
+if __name__ == "__main__":
+    for filename in glob.glob(f"{data_dir}/*.JPEG"):
+        classes = predict_image(filename)
+        input_file = os.path.basename(filename)
 
-    output_file_name = re.sub(".JPEG", "_pred.json", input_file)
+        output_file_name = re.sub(".JPEG", "_pred.json", input_file)
 
-    print(f"{output_file_name}: {classes}")
+        print(f"{output_file_name}: {classes}")
 
-    with open(f"{output_dir}/{output_file_name}", "w") as f:
-        json.dump(dict(file=input_file, classes=classes), f)
+        with open(f"{output_dir}/{output_file_name}", "w") as f:
+            json.dump(dict(file=input_file, classes=classes), f)
