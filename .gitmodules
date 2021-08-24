@@ -1,0 +1,3 @@
+[submodule "inference/s3_triggered/trainml_model"]
+	path = inference/s3_triggered/trainml_model
+	url = https://github.com/trainML/simple-tensorflow-classifier.git
