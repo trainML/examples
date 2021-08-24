@@ -36,7 +36,7 @@ async def create_job(name, input_uri, output_uri):
         gpu_count=1,
         disk_size=1,
         workers=[
-            "python inference/s3_triggered/trainml_model/predict.py",
+            "python predict.py",
         ],
         data=dict(
             input_type="aws",
@@ -46,7 +46,7 @@ async def create_job(name, input_uri, output_uri):
         ),
         model=dict(
             source_type="git",
-            source_uri="https://github.com/trainML/examples.git",
+            source_uri="https://github.com/trainML/simple-tensorflow-classifier.git",
         ),
     )
     return job
