@@ -4,3 +4,6 @@
 [submodule "endpoint/simple-classifier"]
 	path = endpoint/simple-classifier
 	url = https://github.com/trainML/simple-classifier-endpoint.git
+[submodule "training/git-training-workflow"]
+	path = training/git-training-workflow
+	url = https://github.com/trainML/git-workflow-example.git
