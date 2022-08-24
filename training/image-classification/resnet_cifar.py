@@ -164,7 +164,7 @@ class TimeHistory(tf.keras.callbacks.Callback):
         epoch_run_time = time.time() - self.epoch_start
         self.epoch_runtime_log.append(epoch_run_time)
         print(
-            f"BenchmarkMetric: {{'epoch': {epoch:d}, 'time_taken': {epoch_run_time:f}}}"
+            f"BenchmarkMetric: {{'epoch': {(epoch + 1):d}, 'time_taken': {epoch_run_time:f}}}"
         )
 
 
@@ -178,12 +178,18 @@ def build_callbacks(batch_size):
             histogram_freq=1,
         )
     )
-    ckpt_full_path = os.path.join(
-        os.environ.get("TRAINML_OUTPUT_PATH"), "model.ckpt-{epoch:04d}"
+    callbacks.append(
+        tf.keras.callbacks.ModelCheckpoint(
+            os.path.join(os.environ.get("TRAINML_OUTPUT_PATH"), "model-best.ckpt"),
+            monitor="val_loss",
+            save_best_only=True,
+            save_weights_only=True,
+        )
     )
     callbacks.append(
         tf.keras.callbacks.ModelCheckpoint(
-            ckpt_full_path, save_weights_only=True
+            os.path.join(os.environ.get("TRAINML_OUTPUT_PATH"), "model-last.ckpt"),
+            save_weights_only=True,
         )
     )
     return callbacks
