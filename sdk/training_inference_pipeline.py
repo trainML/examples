@@ -23,17 +23,20 @@ training_job = asyncio.run(
     trainml_client.jobs.create(
         name="Example Training Job",
         type="training",
-        gpu_type="GTX 1060",
+        gpu_types=["rtx2080ti", "rtx3090"],
         gpu_count=1,
         disk_size=10,
         workers=[
-            "PYTHONPATH=$PYTHONPATH:$TRAINML_MODEL_PATH python -m official.vision.image_classification.resnet_cifar_main --num_gpus=1 --data_dir=$TRAINML_DATA_PATH --model_dir=$TRAINML_OUTPUT_PATH --enable_checkpoint_and_export=True --train_epochs=10 --batch_size=1024",
+            "python training/image-classification/resnet_cifar.py --epochs 10 --optimizer adam --batch-size 512",
         ],
         data=dict(
             datasets=[dict(id=dataset.id, type="existing")],
             output_type="trainml",
         ),
-        model=dict(git_uri="git@github.com:trainML/test-private.git"),
+        model=dict(
+            source_type="git",
+            source_uri="https://github.com/trainML/examples.git",
+        ),
     )
 )
 print(training_job)
@@ -56,11 +59,11 @@ inference_job = asyncio.run(
     trainml_client.jobs.create(
         name="Example Inference Job",
         type="inference",
-        gpu_type="GTX 1060",
+        gpu_types=["rtx2080ti", "rtx3090"],
         gpu_count=1,
         disk_size=10,
         workers=[
-            "PYTHONPATH=$PYTHONPATH:$TRAINML_MODEL_PATH python -m official.vision.image_classification.resnet_cifar_main --num_gpus=1 --data_dir=$TRAINML_DATA_PATH --model_dir=$TRAINML_OUTPUT_PATH --enable_checkpoint_and_export=True --train_epochs=10 --batch_size=1024",
+            "python training/image-classification/resnet_cifar.py",
         ],
         data=dict(
             input_type="aws",
